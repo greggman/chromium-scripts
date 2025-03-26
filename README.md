@@ -13,7 +13,7 @@ This works on output from dawn-node and run-cts
 # run it
 (cd $S/chromium/src/third_party/dawn &&  ./tools/run run-cts --bin=out/cmake-release --cts=$S/gpuweb/cts --log=$T/cts.txt --output=$T/cts.json  'webgpu:api,*')
 
- # summarize the results
+# summarize the results
 node summarize-cts.mjs $T/cts.json
 ```
 
@@ -30,5 +30,5 @@ This works on output from the CQ bots. Given a particular run [https://dawn-revi
 Assuming you saved it as `log.txt` then
 
 ```sh
-node filter-cq-json.mjs
+node filter-cq-json.mjs log.txt
 ```
