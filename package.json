@@ -1,0 +1,16 @@
+{
+  "name": "chromium-scripts",
+  "version": "1.0.0",
+  "description": "These are some personal scripts for chromium dev. In particular, working on Dawn",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "simple-git": "^3.27.0"
+  }
+}

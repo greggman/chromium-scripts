@@ -2,8 +2,19 @@
 
 These are some personal scripts for chromium dev. In particular, working on Dawn
 
-## `summarize-cts.mjs`
+Installation
 
+```sh
+git clone https://github.com/greggman/chromium-scripts.git
+npm ci
+```
+
+---
+
+`summarize-run-cts-json.mjs`
+===============================
+
+Prints out all the test cases that failed as well as list of tests (higher-level than cases).
 This works on output from dawn-node and run-cts
 
 ```sh
@@ -13,11 +24,14 @@ This works on output from dawn-node and run-cts
 # run it
 (cd $S/chromium/src/third_party/dawn &&  ./tools/run run-cts --bin=out/cmake-release --cts=$S/gpuweb/cts --log=$T/cts.txt --output=$T/cts.json  'webgpu:api,*')
 
-# summarize the results
-node summarize-cts.mjs $T/cts.json
+ # summarize the results
+node summarize-run-cts-json.mjs $T/cts.json
 ```
 
-## `filter-cq-json.mjs`
+---
+
+`filter-cq-json.mjs`
+====================
 
 This works on output from the CQ bots. Given a particular run [https://dawn-review.googlesource.com/q/status:merged](https://dawn-review.googlesource.com/q/status:merged),
 
@@ -32,3 +46,32 @@ Assuming you saved it as `log.txt` then
 ```sh
 node filter-cq-json.mjs log.txt
 ```
+
+---
+
+test-one-spec.ts-on-cq.mjs
+==========================
+
+This runs just one (or a few) .spec.ts on the bots via the cts roller
+
+Steps:
+
+1. cd to your cts folder
+2. make sure it's clean (git status - no output)
+3. make sure it's checked out on the branch you want to test
+4. make sure your local dawn checkout is up to date or at least the version you want it at
+
+```js
+node path/to/test-one-spec.ts-on-cq.mjs --dawn=path/to/dawn "--test=nameOfTest.spec.ts"
+```
+
+What this will do:
+
+1. check git is clean
+2. create cq-test-xxx
+3. delete all .spec.ts except regex matches for `--test=<regex>`
+4. much `tools/gen_wpt_cfg_withsomeworkers.json` and `src/webgpu/listing_meta.json` to make npm test happy
+5. commit git all of this
+6. upload cq-test-xxx to github
+7. execute (cd path-to-dawn && tools/run cts roll --max-attempts 0 --repo <remote-origin> --preserve --revision <revision>)
+
