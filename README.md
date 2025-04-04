@@ -75,3 +75,5 @@ What this will do:
 6. upload `cq-test-<xxx>` to your github
 7. execute `(cd path-to-dawn && tools/run cts roll --max-attempts 0 --repo <remote-origin> --preserve --revision <revision>)`
 
+note: add `--dry-run` to see what it would do. This is especially useful to check that your `--test=<regex>`
+argument filters the correct files.
