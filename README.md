@@ -68,10 +68,10 @@ node path/to/test-one-spec.ts-on-cq.mjs --dawn=path/to/dawn "--test=nameOfTest.s
 What this will do:
 
 1. check git is clean
-2. create cq-test-xxx
-3. delete all .spec.ts except regex matches for `--test=<regex>`
-4. much `tools/gen_wpt_cfg_withsomeworkers.json` and `src/webgpu/listing_meta.json` to make npm test happy
-5. commit git all of this
-6. upload cq-test-xxx to github
-7. execute (cd path-to-dawn && tools/run cts roll --max-attempts 0 --repo <remote-origin> --preserve --revision <revision>)
+2. create a new branch named `cq-test-<xxx>`
+3. git rm all .spec.ts files except regex matches for `--test=<regex>`
+4. munge `tools/gen_wpt_cfg_withsomeworkers.json` and `src/webgpu/listing_meta.json` to make `npm test` happy
+5. `git commit` all of this
+6. upload `cq-test-<xxx>` to your github
+7. execute `(cd path-to-dawn && tools/run cts roll --max-attempts 0 --repo <remote-origin> --preserve --revision <revision>)`
 
