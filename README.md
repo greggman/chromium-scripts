@@ -49,7 +49,7 @@ node filter-cq-json.mjs log.txt
 
 ---
 
-test-one-spec.ts-on-cq.mjs
+`test-one-spec.ts-on-cq.mjs`
 ==========================
 
 This runs just one (or a few) .spec.ts on the bots via the cts roller
