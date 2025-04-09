@@ -49,31 +49,18 @@ node filter-cq-json.mjs log.txt
 
 ---
 
-`test-one-spec.ts-on-cq.mjs`
-==========================
+`summarize-standalone-cts-json.mjs`
+===================================
 
-This runs just one (or a few) .spec.ts on the bots via the cts roller
+Prints out all the test cases that failed as well as list of tests (higher-level than cases).
+This works on output from the standalone tests. The ones that run in the browser at
+[https://gpuweb.github.io/cts/standalone/](https://gpuweb.github.io/cts/standalone/).
 
 Steps:
 
-1. cd to your cts folder
-2. make sure it's clean (git status - no output)
-3. make sure it's checked out on the branch you want to test
-4. make sure your local dawn checkout is up to date or at least the version you want it at
+1. run the cts in the browser.
+2. when tests are finished, click "Save results to JSON file" at the bottom of the page
 
 ```js
-node path/to/test-one-spec.ts-on-cq.mjs --dawn=path/to/dawn "--test=nameOfTest.spec.ts"
+node path/to/summarize-standalone-cts-json.mjs path-to-json-file-you-just-downloaded
 ```
-
-What this will do:
-
-1. check git is clean
-2. create a new branch named `cq-test-<xxx>`
-3. git rm all .spec.ts files except regex matches for `--test=<regex>`
-4. munge `tools/gen_wpt_cfg_withsomeworkers.json` and `src/webgpu/listing_meta.json` to make `npm test` happy
-5. `git commit` all of this
-6. upload `cq-test-<xxx>` to your github
-7. execute `(cd path-to-dawn && tools/run cts roll --max-attempts 0 --repo <remote-origin> --preserve --revision <revision>)`
-
-note: add `--dry-run` to see what it would do. This is especially useful to check that your `--test=<regex>`
-argument filters the correct files.
