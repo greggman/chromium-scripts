@@ -8,6 +8,7 @@ pinpoint experiment-telemetry-start \
 -attempts=150 \
 -story=motionmark_ramp_composite
 */
+import { parseArgs } from 'node:util';
 import { execute } from './lib/execute.js';
 
 function camelCaseToDashCase(id) {
@@ -15,13 +16,6 @@ function camelCaseToDashCase(id) {
     .replace(/(.)([A-Z][a-z]+)/g, '$1-$2')
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
     .toLowerCase();
-}
-
-function dashCaseToCamelCase(name) {
-  return name
-    .split('-')
-    .map(v => v.charAt(0).toUpperCase() + v.slice(1))
-    .join('');
 }
 
 async function pinpointExperimentTelemetryStart(_args) {
@@ -80,48 +74,81 @@ const tests = [
   },
 ];
 
-function help(msg) {
-  console.error('ERROR:', msg);
-  console.log('example arguments:')
-  console.log(Object.entries(commonArgs).map(([k, v]) => `  --${camelCaseToDashCase(k)}=${v}`).join('\n'));
-  process.exit(1);
+const options = {
+  help: { type: 'boolean', short: 'h', description: 'Show this help message' },
+  filter: { type: 'string', description: 'Filter by benchmark (case-insensitive substring)' },
+};
+
+for (const key of Object.keys(commonArgs)) {
+  options[camelCaseToDashCase(key)] = {
+    type: 'string',
+    description: `Default: ${commonArgs[key]}`,
+  };
+}
+
+function printUsage() {
+  console.log('Usage: node pinpoint-batch.mjs [options]');
+  console.log('Options:');
+  for (const [name, opt] of Object.entries(options)) {
+    const alias = opt.short ? `-${opt.short}, ` : '    ';
+    const argType = opt.type === 'string' ? '=<value>' : '';
+    const optionStr = `${alias}--${name}${argType}`;
+    console.log(`  ${optionStr.padEnd(30)} ${opt.description || ''}`);
+  }
+  console.log('\nBenchmarks:');
+  const uniqueBenchmarks = [...new Set(tests.map(t => t.benchmark))];
+  for (const benchmark of uniqueBenchmarks) {
+    console.log(`  ${benchmark}`);
+  }
 }
 
 async function main() {
-  for (let i = 2; i < process.argv.length; ++i) {
-    const option = process.argv[i];
-    if (!option.startsWith('-')) {
-      help(`unknown argument: ${option}`);
-    }
-    const rawOption = option.replace(/^-+/, '')
-    const equalNdx = rawOption.indexOf('=');
-    let name;
-    let value;
-    if (equalNdx > 0) {
-      name = rawOption.substring(0, equalNdx);
-      value = rawOption.substring(equalNdx + 1);
-    } else {
-      name = rawOption;
-      value = process.argv[++i];
-    }
-    const camelCaseName = dashCaseToCamelCase(name);
-    if (!camelCaseName in commonArgs) {
-      help(`unknown argument: ${option}`);
-    }
-    if (!value) {
-      help(`unknown argument: ${option}`);
-    }
-    commonArgs[name] = value;
+  let values;
+  try {
+    const result = parseArgs({ options });
+    values = result.values;
+  } catch (err) {
+    console.error('ERROR:', err.message);
+    printUsage();
+    process.exit(1);
   }
 
+  if (values.help) {
+    printUsage();
+    process.exit(0);
+  }
+
+  for (const key of Object.keys(commonArgs)) {
+    const dashCaseKey = camelCaseToDashCase(key);
+    if (values[dashCaseKey] !== undefined) {
+      const originalValue = commonArgs[key];
+      if (typeof originalValue === 'number') {
+        const num = Number(values[dashCaseKey]);
+        if (Number.isNaN(num)) {
+          console.error(`ERROR: --${dashCaseKey} must be a number`);
+          printUsage();
+          process.exit(1);
+        }
+        commonArgs[key] = num;
+      } else {
+        commonArgs[key] = values[dashCaseKey];
+      }
+    }
+  }
+
+  const filter = values.filter?.toLowerCase();
+
   for (const { benchmark, story, cfgs } of tests) {
+    if (filter && !benchmark.toLowerCase().includes(filter)) {
+      continue;
+    }
     for (const cfg of cfgs) {
       const args = {
         ...commonArgs,
         benchmark,
         story,
         cfg,
-      }
+      };
       await pinpointExperimentTelemetryStart(args);
     }
   }
