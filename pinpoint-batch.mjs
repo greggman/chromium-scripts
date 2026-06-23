@@ -76,7 +76,8 @@ const tests = [
 
 const options = {
   help: { type: 'boolean', short: 'h', description: 'Show this help message' },
-  filter: { type: 'string', description: 'Filter by benchmark (case-insensitive substring)' },
+  benchmark: { type: 'string', description: 'Filter by benchmark (case-insensitive substring)' },
+  bot: { type: 'string', description: 'Filter by bot (case-insensitive substring)' },
 };
 
 for (const key of Object.keys(commonArgs)) {
@@ -99,6 +100,11 @@ function printUsage() {
   const uniqueBenchmarks = [...new Set(tests.map(t => t.benchmark))];
   for (const benchmark of uniqueBenchmarks) {
     console.log(`  ${benchmark}`);
+  }
+  console.log('\nBots:');
+  const uniqueCfgs = [...new Set(allCfgs)];
+  for (const cfg of uniqueCfgs) {
+    console.log(`  ${cfg}`);
   }
 }
 
@@ -136,19 +142,24 @@ async function main() {
     }
   }
 
-  const filter = values.filter?.toLowerCase();
+  const benchmarkFilter = values.benchmark?.toLowerCase();
+  const botFilter = values.bot?.toLowerCase();
 
   for (const { benchmark, story, cfgs } of tests) {
-    if (filter && !benchmark.toLowerCase().includes(filter)) {
+    if (benchmarkFilter && !benchmark.toLowerCase().includes(benchmarkFilter)) {
       continue;
     }
     for (const cfg of cfgs) {
+      if (botFilter && !cfg.toLowerCase().includes(botFilter)) {
+        continue;
+      }
       const args = {
         ...commonArgs,
         benchmark,
         story,
         cfg,
       };
+      console.log('run:', JSON.stringify(args));
       await pinpointExperimentTelemetryStart(args);
     }
   }
