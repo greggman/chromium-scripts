@@ -28,6 +28,12 @@ async function pinpointExperimentTelemetryStart(_args) {
   await execute('pinpoint', args);
 }
 
+// https://chromium-review.git.corp.google.com/c/chromium/src/+/8049101
+// https://chromium-review.googlesource.com/c/chromium/src/+/8049101
+function unGoogleUrl(url) {
+  return url.replaceAll(/git\.corp\.google/g, 'googlesource');
+}
+
 const commonArgs = {
   baseCommit: '9f798ea0366b9c446bd028926bca0721c5d1c23a',
   expCommit: '9f798ea0366b9c446bd028926bca0721c5d1c23a',
@@ -137,7 +143,7 @@ async function main() {
         }
         commonArgs[key] = num;
       } else {
-        commonArgs[key] = values[dashCaseKey];
+        commonArgs[key] = unGoogleUrl(values[dashCaseKey]);
       }
     }
   }
